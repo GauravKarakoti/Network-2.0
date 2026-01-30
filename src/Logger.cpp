@@ -15,7 +15,7 @@ Logger::~Logger() {
 
 void Logger::writeCSVHeader() {
     if (csvFile.is_open()) {
-        csvFile << "Timestamp,Source_IP,Source_Port,Dest_IP,Dest_Port,Protocol,Size_Bytes,Is_Anomaly,Anomaly_Reason" << std::endl;
+        csvFile << "Timestamp,Source_IP,Source_Port,Dest_IP,Dest_Port,Source_MAC,Dest_MAC,Protocol,Size_Bytes,Is_Anomaly,Anomaly_Reason" << std::endl;
     }
 }
 
@@ -54,6 +54,8 @@ void Logger::logPacket(const PacketInfo& packet) {
             << packet.sourcePort << ","
             << packet.destIP << ","
             << packet.destPort << ","
+            << packet.sourceMAC << ","
+            << packet.destMAC << ","
             << packet.protocol << ","
             << packet.packetSize << ","
             << (packet.isAnomaly ? "true" : "false") << ","
@@ -70,6 +72,8 @@ void Logger::logAlert(const Alert& alert) {
             << packet.sourcePort << ","
             << packet.destIP << ","
             << packet.destPort << ","
+            << packet.sourceMAC << ","
+            << packet.destMAC << ","
             << packet.protocol << ","
             << packet.packetSize << ","
             << "true,"
@@ -85,7 +89,7 @@ void Logger::exportToCSV(const std::vector<PacketInfo>& packets, const std::stri
         return;
     }
     
-    exportFile << "Timestamp,Source_IP,Source_Port,Dest_IP,Dest_Port,Protocol,Size_Bytes,Is_Anomaly,Anomaly_Reason" << std::endl;
+    exportFile << "Timestamp,Source_IP,Source_Port,Dest_IP,Dest_Port,Source_MAC,Dest_MAC,Protocol,Size_Bytes,Is_Anomaly,Anomaly_Reason" << std::endl;
     
     for (const auto& packet : packets) {
         exportFile << Utils::formatTimestamp(packet.timestamp) << ","
@@ -93,6 +97,8 @@ void Logger::exportToCSV(const std::vector<PacketInfo>& packets, const std::stri
                    << packet.sourcePort << ","
                    << packet.destIP << ","
                    << packet.destPort << ","
+                   << packet.sourceMAC << ","
+                   << packet.destMAC << ","
                    << packet.protocol << ","
                    << packet.packetSize << ","
                    << (packet.isAnomaly ? "true" : "false") << ","

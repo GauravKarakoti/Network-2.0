@@ -8,6 +8,8 @@
 struct PacketInfo {
     std::string sourceIP;
     std::string destIP;
+    std::string sourceMAC;
+    std::string destMAC;
     std::string protocol;
     uint16_t sourcePort;
     uint16_t destPort;

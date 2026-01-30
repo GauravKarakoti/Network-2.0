@@ -77,13 +77,15 @@ void NetworkStats::printLiveTable(const PacketInfo* recentPackets, size_t count)
     std::cout << Utils::Colors::BOLD;
     std::cout << std::left << std::setw(12) << "Time"
               << std::setw(16) << "Source IP"
+              << std::setw(18) << "Source MAC"
               << std::setw(16) << "Dest IP"
+              << std::setw(18) << "Dest MAC"
               << std::setw(8) << "Protocol"
               << std::setw(10) << "Size"
-              << std::setw(40) << "Notes"
+              << std::setw(30) << "Notes"
               << Utils::Colors::RESET << std::endl;
     
-    std::cout << std::string(102, '-') << std::endl;
+    std::cout << std::string(128, '-') << std::endl;
     
 
     for (size_t i = 0; i < count; ++i) {
@@ -97,14 +99,16 @@ void NetworkStats::printLiveTable(const PacketInfo* recentPackets, size_t count)
         std::cout << color;
         std::cout << std::left << std::setw(12) << Utils::formatTimestamp(packet.timestamp)
                   << std::setw(16) << packet.sourceIP
+                  << std::setw(18) << packet.sourceMAC
                   << std::setw(16) << packet.destIP
+                  << std::setw(18) << packet.destMAC
                   << std::setw(8) << packet.protocol
                   << std::setw(10) << Utils::formatBytes(packet.packetSize);
         
         if (packet.isAnomaly) {
-            std::cout << std::setw(40) << ("ANOMALY: " + packet.anomalyReason);
+            std::cout << std::setw(30) << ("ANOMALY: " + packet.anomalyReason);
         } else {
-            std::cout << std::setw(40) << "";
+            std::cout << std::setw(30) << "";
         }
         
         std::cout << Utils::Colors::RESET << std::endl;

@@ -118,6 +118,11 @@ PacketInfo PacketCapture::parsePacket(const struct pcap_pkthdr* pkthdr, const u_
     info.packetSize = pkthdr->len;
     info.timestamp = std::chrono::system_clock::now();
     
+    // Extract MAC addresses from Ethernet header (first 14 bytes)
+    // Ethernet header: 6 bytes dest MAC + 6 bytes source MAC + 2 bytes EtherType
+    info.destMAC = Utils::macToString(packet);          // Bytes 0-5
+    info.sourceMAC = Utils::macToString(packet + 6);    // Bytes 6-11
+    
     const u_char* ip_packet = packet + 14;
     
 #ifdef _WIN32

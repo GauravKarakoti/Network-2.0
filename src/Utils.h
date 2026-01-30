@@ -21,6 +21,7 @@ namespace Utils {
     std::string formatTimestamp(const std::chrono::system_clock::time_point& tp);
     std::string formatBytes(uint32_t bytes);
     std::string protocolToString(int protocol);
+    std::string macToString(const uint8_t* mac);
     void playBeep();
     void clearScreen();
     std::vector<std::string> splitString(const std::string& str, char delimiter);

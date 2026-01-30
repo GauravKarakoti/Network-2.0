@@ -112,7 +112,9 @@ While the program is running, you can use these commands:
 The main display shows:
 - **Time**: Timestamp of packet capture
 - **Source IP**: Source IP address
-- **Dest IP**: Destination IP address  
+- **Source MAC**: Source hardware (MAC) address
+- **Dest IP**: Destination IP address
+- **Dest MAC**: Destination hardware (MAC) address
 - **Protocol**: TCP, UDP, ICMP, or other
 - **Size**: Packet size in bytes
 - **Notes**: Anomaly information or alerts
@@ -137,7 +139,7 @@ The tool detects three types of anomalies:
 
 Exported CSV files contain:
 ```
-Timestamp,Source_IP,Source_Port,Dest_IP,Dest_Port,Protocol,Size_Bytes,Is_Anomaly,Anomaly_Reason
+Timestamp,Source_IP,Source_Port,Dest_IP,Dest_Port,Source_MAC,Dest_MAC,Protocol,Size_Bytes,Is_Anomaly,Anomaly_Reason
 ```
 
 ## Architecture

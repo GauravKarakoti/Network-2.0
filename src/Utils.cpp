@@ -49,6 +49,16 @@ std::string Utils::protocolToString(int protocol) {
     }
 }
 
+std::string Utils::macToString(const uint8_t* mac) {
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (int i = 0; i < 6; ++i) {
+        if (i > 0) ss << ":";
+        ss << std::setw(2) << static_cast<int>(mac[i]);
+    }
+    return ss.str();
+}
+
 void Utils::playBeep() {
 #ifdef _WIN32
     Beep(800, 300);
