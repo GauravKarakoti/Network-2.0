@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <atomic>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -22,24 +23,40 @@ class PacketCapture {
 private:
     pcap_t* handle;
     std::string interface;
-    bool isCapturing;
-    
-    static void packetHandler(u_char* userData, const struct pcap_pkthdr* pkthdr, const u_char* packet);
-    PacketInfo parsePacket(const struct pcap_pkthdr* pkthdr, const u_char* packet);
+    std::atomic<bool> isCapturing{false};
+
+    // ===== RING BUFFER =====
+    static const int RING_SIZE = 2048;   // bigger buffer for high speed
+    const u_char* ringBuffer[RING_SIZE];
+    std::atomic<size_t> ringHead{0};
+    std::atomic<size_t> ringTail{0};
+
+    static void packetHandler(
+        u_char* userData,
+        const struct pcap_pkthdr* pkthdr,
+        const u_char* packet
+    );
+
+    PacketInfo parsePacket(const struct pcap_pkthdr* pkthdr,
+                           const u_char* packet);
+
     std::string ipToString(uint32_t ip);
-    
+
+    // new worker-style processor
+    void processRingBuffer();
+
 public:
     PacketCapture();
     ~PacketCapture();
-    
+
     bool initialize(const std::string& interface = "");
     bool startCapture();
     void stopCapture();
     std::vector<std::string> getAvailableInterfaces();
-    
+
     std::function<void(const PacketInfo&)> onPacketReceived;
-    
-    bool isActive() const { return isCapturing; }
+
+    bool isActive() const { return isCapturing.load(); }
     const std::string& getInterface() const { return interface; }
 };
 
