@@ -227,10 +227,16 @@ void NetworkMonitor::processPacket(const PacketInfo& packet) {
 
 void NetworkMonitor::displayLoop() {
     while (running) {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        while (!packetQueue.empty()) {
-            processPacket(packetQueue.front());
-            packetQueue.pop();
+        std::queue<PacketInfo> localQueue;
+        
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            std::swap(localQueue, packetQueue);
+        }
+
+        while (!localQueue.empty()) {
+            processPacket(localQueue.front());
+            localQueue.pop();
         }
         
         size_t displayCount = (std::min)(stats.getTotalPackets(), 
