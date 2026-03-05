@@ -6,6 +6,7 @@
 #include <vector>
 #include <functional>
 #include <atomic>
+#include <memory>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -28,6 +29,14 @@ private:
     // ===== RING BUFFER =====
     static const int RING_SIZE = 2048;   // bigger buffer for high speed
     const u_char* ringBuffer[RING_SIZE];
+
+    struct QueuedPacket {
+        struct pcap_pkthdr header;
+        std::unique_ptr<u_char[]> data;
+    };
+
+    std::unique_ptr<QueuedPacket> ringBuffer[RING_SIZE];
+
     std::atomic<size_t> ringHead{0};
     std::atomic<size_t> ringTail{0};
 

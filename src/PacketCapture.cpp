@@ -132,12 +132,10 @@ void PacketCapture::stopCapture() {
 /* ---------- FAST PATH: only store pointer ---------- */
 void PacketCapture::packetHandler(
     u_char* userData,
-    const struct pcap_pkthdr*,
+    const struct pcap_pkthdr* pkthdr,
     const u_char* packet) {
 
-    PacketCapture* capture =
-        reinterpret_cast<PacketCapture*>(userData);
-
+    PacketCapture* capture = reinterpret_cast<PacketCapture*>(userData);
     size_t next = (capture->ringHead + 1) % RING_SIZE;
 
     // drop packet if buffer full (graceful backpressure)
@@ -145,28 +143,33 @@ void PacketCapture::packetHandler(
         return;
     }
 
-    capture->ringBuffer[capture->ringHead] = packet;
+    auto queuedPkt = std::make_unique<QueuedPacket>();
+    queuedPkt->header = *pkthdr;
+    queuedPkt->data = std::make_unique<u_char[]>(pkthdr->caplen);
+    std::memcpy(queuedPkt->data.get(), packet, pkthdr->caplen);
+
+    capture->ringBuffer[capture->ringHead] = std::move(queuedPkt);
     capture->ringHead = next;
 }
 
 /* ---------- SLOW PATH: parse in background ---------- */
 void PacketCapture::processRingBuffer() {
-
     while (isCapturing) {
-
         if (ringTail == ringHead) {
             std::this_thread::sleep_for(
                 std::chrono::microseconds(50));
             continue;
         }
 
-        const u_char* packet = ringBuffer[ringTail];
+        std::unique_ptr<QueuedPacket> queuedPkt = std::move(ringBuffer[ringTail]);
         ringTail = (ringTail + 1) % RING_SIZE;
 
-        PacketInfo info = parsePacket(nullptr, packet);
+        if (queuedPkt) {
+            PacketInfo info = parsePacket(&queuedPkt->header, queuedPkt->data.get());
 
-        if (onPacketReceived) {
-            onPacketReceived(info);
+            if (onPacketReceived) {
+                onPacketReceived(info);
+            }
         }
     }
 }
