@@ -22,6 +22,7 @@ private:
     std::string protocolFilter;  // Empty = no filter, "TCP", "UDP", or "ICMP"
     
     std::atomic<bool> running{false};
+    bool isSilentMode{false};
     std::queue<PacketInfo> packetQueue;
     std::mutex queueMutex;
     
@@ -88,6 +89,10 @@ bool NetworkMonitor::parseArguments(int argc, char* argv[]) {
         if (arg == "--help" || arg == "-h") {
             printHelp();
             return false;
+        } else if (arg == "--silent") {
+            isSilentMode = true;
+            std::cout << Utils::Colors::GREEN << "Silent mode enabled. Live traffic table suppressed." 
+                      << Utils::Colors::RESET << std::endl;
         } else if (arg == "--watch-ip" && i + 1 < argc) {
             std::string ip = argv[++i];
             if (!Utils::isValidIP(ip)) {
@@ -136,6 +141,7 @@ void NetworkMonitor::printHelp() const {
     std::cout << "Usage: network2.0 [OPTIONS]\n\n"
               << "Options:\n"
               << "  --help, -h              Show this help message\n"
+              << "  --silent                Run in silent mode (suppress live traffic table)\n"
               << "  --watch-ip <IP>         Watch traffic for specific IP address\n"
               << "  --alert-port <PORT>     Alert on traffic to/from specific port\n"
               << "  --log <filename>        Enable logging to CSV file\n"
@@ -239,9 +245,11 @@ void NetworkMonitor::displayLoop() {
             localQueue.pop();
         }
         
-        size_t displayCount = (std::min)(stats.getTotalPackets(), 
-                                     static_cast<uint64_t>(MAX_DISPLAY_PACKETS));
-        stats.printLiveTable(recentPackets, displayCount);
+        if (!isSilentMode) {
+            size_t displayCount = (std::min)(stats.getTotalPackets(), 
+                                         static_cast<uint64_t>(MAX_DISPLAY_PACKETS));
+            stats.printLiveTable(recentPackets, displayCount);
+        }
         
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
